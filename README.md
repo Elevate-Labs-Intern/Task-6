@@ -1,6 +1,6 @@
 # GUI Based Desktop Task Management Application with AWT/Swing 👩‍💼🧑‍💼
 We implement an advanced task management app. Most of the edge cases have been accounted for. By default tasks are sorted by due date(which can be changed manually).
-The .jar file, for JXDatePicker, downloaded from Maven Repository has been put in the project's root folder.
+The .jar file, LGoodDatePicker, [downloaded from Maven Repository](https://mvnrepository.com/artifact/com.github.lgooddatepicker/LGoodDatePicker) has been put in the project's root folder.
 
 ## Adding the dependency:
 
