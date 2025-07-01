@@ -2,15 +2,15 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import org.jdesktop.swingx.JXDatePicker;
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class TaskManager {
-
     private static final java.util.List<Task> taskList = new ArrayList<>();
     private static final DefaultTableModel tableModel;
     private static final JTable table;
@@ -33,6 +33,7 @@ public class TaskManager {
         table = new JTable(tableModel);
         table.setRowHeight(25);
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(TaskManager::createAndShowGUI);
@@ -74,14 +75,23 @@ public class TaskManager {
         }
 
         table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+
             @Override
+
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
                 JButton button = new JButton(deleteIcon);
+
                 button.setPreferredSize(new Dimension(20, 20));
+
                 button.setBorderPainted(false);
+
                 button.setContentAreaFilled(false);
+
                 return button;
+
             }
+
         });
 
         JScrollPane scrollPane = new JScrollPane(table);
@@ -163,13 +173,7 @@ public class TaskManager {
     }
 
     private static void sortByDueDate() {
-        taskList.sort(Comparator.comparing(task -> {
-            try {
-                return new SimpleDateFormat("yyyy-MM-dd").parse(task.dueDate);
-            } catch (ParseException ex) {
-                return new Date();
-            }
-        }));
+        taskList.sort(Comparator.comparing(task -> LocalDate.parse(task.dueDate)));
     }
 
     private static void addTask() {
@@ -186,13 +190,11 @@ public class TaskManager {
     private static Task showTaskDialog(Task task) {
         JTextField titleField = new JTextField(task != null ? task.title : "");
 
-        JXDatePicker datePicker = new JXDatePicker();
-        datePicker.setFormats("yyyy-MM-dd");
+        DatePickerSettings settings = new DatePickerSettings();
+        settings.setFormatForDatesCommonEra("yyyy-MM-dd");
+        DatePicker datePicker = new DatePicker(settings);
         if (task != null) {
-            try {
-                Date date = new SimpleDateFormat("yyyy-MM-dd").parse(task.dueDate);
-                datePicker.setDate(date);
-            } catch (Exception ignored) {}
+            datePicker.setDate(LocalDate.parse(task.dueDate));
         }
 
         String[] priorities = {"Low", "Medium", "High"};
@@ -211,7 +213,13 @@ public class TaskManager {
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
-            String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(datePicker.getDate());
+            LocalDate selectedDate = datePicker.getDate();
+            if (selectedDate == null || selectedDate.isBefore(LocalDate.now())) {
+                JOptionPane.showMessageDialog(null, "Please select a valid due date and time(neither empty nor before current time).", "Invalid Date", JOptionPane.WARNING_MESSAGE);
+                return null;
+            }
+
+            String dateStr = selectedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             return new Task(titleField.getText().trim(), dateStr, priorityBox.getSelectedItem().toString());
         }
         return null;
